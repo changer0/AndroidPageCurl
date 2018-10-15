@@ -1,5 +1,5 @@
 /*
-   Copyright 2012 Harri Smatt
+   Copyright 2011 Harri Smått
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
- */
+*/
 
 package fi.harism.curl;
 
@@ -34,35 +34,41 @@ import android.opengl.GLU;
  */
 public class CurlRenderer implements GLSurfaceView.Renderer {
 
+	// Constants for changing view mode.
+	public static final int SHOW_ONE_PAGE = 1;
+	public static final int SHOW_TWO_PAGES = 2;
+	private int mViewMode = SHOW_ONE_PAGE;
+
 	// Constant for requesting left page rect.
 	public static final int PAGE_LEFT = 1;
 	// Constant for requesting right page rect.
 	public static final int PAGE_RIGHT = 2;
-	// Constants for changing view mode.
-	public static final int SHOW_ONE_PAGE = 1;
-	public static final int SHOW_TWO_PAGES = 2;
+
 	// Set to true for checking quickly how perspective projection looks.
 	private static final boolean USE_PERSPECTIVE_PROJECTION = false;
-	// Background fill color.
-	private int mBackgroundColor;
-	// Curl meshes used for static and dynamic rendering.
-	private Vector<CurlMesh> mCurlMeshes;
-	private RectF mMargins = new RectF();
-	private CurlRenderer.Observer mObserver;
-	// Page rectangles.
-	private RectF mPageRectLeft;
-	private RectF mPageRectRight;
-	// View mode.
-	private int mViewMode = SHOW_ONE_PAGE;
-	// Screen size.
-	private int mViewportWidth, mViewportHeight;
+
 	// Rect for render area.
 	private RectF mViewRect = new RectF();
+	private RectF mMargins = new RectF();
+	// Screen size.
+	private int mViewportWidth;
+	private int mViewportHeight;
+
+	// Curl meshes used for static and dynamic rendering.
+	private Vector<CurlMesh> mCurlMeshes;
+
+	private boolean mBackgroundColorChanged = false;
+	private int mBackgroundColor;
+
+	private Observer mObserver;
+
+	private RectF mPageRectLeft;
+	private RectF mPageRectRight;
 
 	/**
 	 * Basic constructor.
 	 */
-	public CurlRenderer(CurlRenderer.Observer observer) {
+	public CurlRenderer(Observer observer) {
 		mObserver = observer;
 		mCurlMeshes = new Vector<CurlMesh>();
 		mPageRectLeft = new RectF();
@@ -95,11 +101,15 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 
 		mObserver.onDrawFrame();
 
-		gl.glClearColor(Color.red(mBackgroundColor) / 255f,
-				Color.green(mBackgroundColor) / 255f,
-				Color.blue(mBackgroundColor) / 255f,
-				Color.alpha(mBackgroundColor) / 255f);
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		if (mBackgroundColorChanged) {
+			gl.glClearColor(Color.red(mBackgroundColor) / 255f,
+					Color.green(mBackgroundColor) / 255f,
+					Color.blue(mBackgroundColor) / 255f,
+					Color.alpha(mBackgroundColor) / 255f);
+			mBackgroundColorChanged = false;
+		}
+
+		gl.glClear(GL10.GL_COLOR_BUFFER_BIT); // | GL10.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 
 		if (USE_PERSPECTIVE_PROJECTION) {
@@ -107,7 +117,7 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 		}
 
 		for (int i = 0; i < mCurlMeshes.size(); ++i) {
-			mCurlMeshes.get(i).onDrawFrame(gl);
+			mCurlMeshes.get(i).draw(gl);
 		}
 	}
 
@@ -164,6 +174,7 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 	 */
 	public void setBackgroundColor(int color) {
 		mBackgroundColor = color;
+		mBackgroundColorChanged = true;
 	}
 
 	/**
