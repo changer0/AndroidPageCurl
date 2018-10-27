@@ -35,8 +35,8 @@ public class CurlPage {
 
 	private int mColorBack;
 	private int mColorFront;
-	private Bitmap mTextureBack;
-	private Bitmap mTextureFront;
+	private Bitmap mTextureBack;//背面的纹理
+	private Bitmap mTextureFront;//正面的纹理
 	private boolean mTexturesChanged;
 
 	/**
@@ -126,6 +126,7 @@ public class CurlPage {
 	/**
 	 * Returns true if back siding texture exists and it differs from front
 	 * facing one.
+	 * 如果背面纹理存在并且跟正面纹理不同则返回true
 	 */
 	public boolean hasBackTexture() {
 		return !mTextureFront.equals(mTextureBack);

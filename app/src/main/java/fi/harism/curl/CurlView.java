@@ -49,7 +49,8 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 	private boolean mAllowLastPageCurl = true;
 
 	private boolean mAnimate = false;
-	private long mAnimationDurationTime = 300;
+	//设置卷轴动画时长
+	private long mAnimationDurationTime = 200;
 	private PointF mAnimationSource = new PointF();
 	private long mAnimationStartTime;
 	private PointF mAnimationTarget = new PointF();
@@ -62,7 +63,7 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 	// Current bitmap index. This is always showed as front of right page.
 	private int mCurrentIndex = 0;
 
-	// Start position for dragging.
+	// Start position for dragging.开始拖动的位置
 	private PointF mDragStartPos = new PointF();
 
 	private boolean mEnableTouchPressure = false;
@@ -467,6 +468,7 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 	/**
 	 * Set margins (or padding). Note: margins are proportional. Meaning a value
 	 * of .1f will produce a 10% margin.
+	 * 注意这个Margin的单位是百分比 0.1f 为 距离当前 宽/高 的10%
 	 */
 	public void setMargins(float left, float top, float right, float bottom) {
 		mRenderer.setMargins(left, top, right, bottom);

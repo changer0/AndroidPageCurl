@@ -50,6 +50,7 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 	private RectF mMargins = new RectF();
 	private CurlRenderer.Observer mObserver;
 	// Page rectangles.
+	//左右两个Page 左侧在屏幕外 右侧在屏幕内
 	private RectF mPageRectLeft;
 	private RectF mPageRectRight;
 	// View mode.
@@ -195,6 +196,7 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 
 	/**
 	 * Translates screen coordinates into view coordinates.
+	 * 将屏幕坐标转换为视图坐标。 视口宽/屏幕 * 屏幕点击位置 + 视口起始位置
 	 */
 	public void translate(PointF pt) {
 		pt.x = mViewRect.left + (mViewRect.width() * pt.x / mViewportWidth);
@@ -215,7 +217,7 @@ public class CurlRenderer implements GLSurfaceView.Renderer {
 			mPageRectRight.bottom -= mViewRect.height() * mMargins.bottom;
 
 			mPageRectLeft.set(mPageRectRight);
-			mPageRectLeft.offset(-mPageRectRight.width(), 0);
+			mPageRectLeft.offset(-mPageRectRight.width(), 0);//坐标的矩形往左挪动 一个矩形宽度
 
 			int bitmapW = (int) ((mPageRectRight.width() * mViewportWidth) / mViewRect
 					.width());

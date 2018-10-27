@@ -39,11 +39,11 @@ public class CurlMesh {
 	// curl position and one for the direction from the
 	// position given. Comes handy once playing around with different
 	// ways for following pointer.
-	private static final boolean DRAW_CURL_POSITION = false;
+	private static final boolean DRAW_CURL_POSITION = true;
 	// Flag for drawing polygon outlines. Using this flag crashes on emulator
 	// due to reason unknown to me. Leaving it here anyway as seeing polygon
 	// outlines gives good insight how original rectangle is divided.
-	private static final boolean DRAW_POLYGON_OUTLINES = false;
+	private static final boolean DRAW_POLYGON_OUTLINES = true;
 	// Flag for enabling shadow rendering.
 	private static final boolean DRAW_SHADOW = true;
 	// Flag for texture rendering. While this is likely something you
@@ -84,8 +84,14 @@ public class CurlMesh {
 	// Maximum number of split lines used for creating a curl.
 	private int mMaxCurlSplits;
 
-	// Bounding rectangle for this mesh. mRectagle[0] = top-left corner,
-	// mRectangle[1] = bottom-left, mRectangle[2] = top-right and mRectangle[3]
+	// Bounding rectangle for this mesh. 网格表框
+	//0 ----- 2
+	// |     | 对应顶点位置
+	// |     |
+	//1 ----- 3
+	// mRectagle[0] = top-left corner,
+	// mRectangle[1] = bottom-left,
+	// mRectangle[2] = top-right and mRectangle[3]
 	// bottom-right.
 	private final Vertex[] mRectangle = new Vertex[4];
 	private int mSelfShadowCount;
@@ -602,8 +608,9 @@ public class CurlMesh {
 	 */
 	public synchronized void onDrawFrame(GL10 gl) {
 		// First allocate texture if there is not one yet.
+		//纹理初始化
 		if (DRAW_TEXTURE && mTextureIds == null) {
-			// Generate texture.
+			// Generate texture. 生成两个纹理ID, 分别是正面和背面
 			mTextureIds = new int[2];
 			gl.glGenTextures(2, mTextureIds, 0);
 			for (int textureId : mTextureIds) {
@@ -620,6 +627,7 @@ public class CurlMesh {
 			}
 		}
 
+		//开始纹理贴图
 		if (DRAW_TEXTURE && mTexturePage.getTexturesChanged()) {
 			gl.glBindTexture(GL10.GL_TEXTURE_2D, mTextureIds[0]);
 			Bitmap texture = mTexturePage.getTexture(mTextureRectFront,
@@ -645,6 +653,7 @@ public class CurlMesh {
 		// Some 'global' settings.
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 
+		//阴影绘制开始
 		// TODO: Drop shadow drawing is done temporarily here to hide some
 		// problems with its calculation.
 		if (DRAW_SHADOW) {
@@ -803,6 +812,7 @@ public class CurlMesh {
 
 	/**
 	 * If true, flips texture sideways.
+	 * 如果 true，则将纹理翻转到侧边。
 	 */
 	public synchronized void setFlipTexture(boolean flipTexture) {
 		mFlipTexture = flipTexture;
@@ -815,6 +825,7 @@ public class CurlMesh {
 
 	/**
 	 * Update mesh bounds.
+	 * 更新mRectangle坐标
 	 */
 	public void setRect(RectF r) {
 		mRectangle[0].mPosX = r.left;
@@ -829,6 +840,7 @@ public class CurlMesh {
 
 	/**
 	 * Sets texture coordinates to mRectangle vertices.
+	 * 将纹理坐标设置为mRectangle顶点。
 	 */
 	private synchronized void setTexCoords(float left, float top, float right,
 			float bottom) {
