@@ -98,7 +98,7 @@ public class CurlMesh {
 
 	private boolean mTextureBack = false;
 	// Texture ids and other variables.
-	private int[] mTextureIds = null;
+	private int[] mTextureIds = null;// 生成两个纹理ID, 分别是正面和背面
 	private final CurlPage mTexturePage = new CurlPage();
 	private final RectF mTextureRectBack = new RectF();
 	private final RectF mTextureRectFront = new RectF();

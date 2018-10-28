@@ -21,6 +21,7 @@ import android.graphics.PointF;
 import android.graphics.RectF;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -141,7 +142,7 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 	@Override
 	public void onDrawFrame() {
 		// We are not animating.
-		if (mAnimate == false) {
+		if (!mAnimate) {
 			return;
 		}
 
@@ -232,7 +233,7 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 		RectF rightRect = mRenderer.getPageRect(CurlRenderer.PAGE_RIGHT);
 		RectF leftRect = mRenderer.getPageRect(CurlRenderer.PAGE_LEFT);
 
-		// Store pointer position.
+		// Store pointer position. 触摸位置
 		mPointerPos.mPos.set(me.getX(), me.getY());
 		mRenderer.translate(mPointerPos.mPos);
 		if (mEnableTouchPressure) {
@@ -318,26 +319,55 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 				mAnimationSource.set(mPointerPos.mPos);
 				mAnimationStartTime = System.currentTimeMillis();
 
-				// Given the explanation, here we decide whether to simulate
-				// drag to left or right end.
-				if ((mViewMode == SHOW_ONE_PAGE && mPointerPos.mPos.x > (rightRect.left + rightRect.right) / 2)
-						|| mViewMode == SHOW_TWO_PAGES
-						&& mPointerPos.mPos.x > rightRect.left) {
-					// On right side target is always right page's right border.
-					mAnimationTarget.set(mDragStartPos);
-					mAnimationTarget.x = mRenderer
-							.getPageRect(CurlRenderer.PAGE_RIGHT).right;
-					mAnimationTargetEvent = SET_CURL_TO_RIGHT;
-				} else {
-					// On left side target depends on visible pages.
-					mAnimationTarget.set(mDragStartPos);
-					if (mCurlState == CURL_RIGHT || mViewMode == SHOW_TWO_PAGES) {
-						mAnimationTarget.x = leftRect.left;
+				if(mViewMode == SHOW_ONE_PAGE) {
+					Log.d("CurlView", "onTouch: mPointerPos.mPos.x:" + mPointerPos.mPos.x);
+					Log.d("CurlView", "onTouch: mDragStartPos.x:" + mDragStartPos.x);
+					Log.d("CurlView", "onTouch: mCurlState:" + (mCurlState == 1 ? "CURL_LEFT" : "CURL_RIGHT"));
+
+					//抬手时在右侧
+					boolean isUpRight = mPointerPos.mPos.x > (rightRect.left + rightRect.right) / 2;
+					//触摸抬起的位置一直在右边 || 触摸位置从右向左
+					if (mDragStartPos.x == rightRect.right && isUpRight || mDragStartPos.x == rightRect.right && !isUpRight) {
+						mAnimationTarget.set(mDragStartPos);
+						if (mCurlState == CURL_RIGHT) {
+							mAnimationTarget.x = leftRect.left;
+						} else {
+							mAnimationTarget.x = rightRect.left;
+						}
+						mAnimationTargetEvent = SET_CURL_TO_LEFT;//向左卷轴
 					} else {
-						mAnimationTarget.x = rightRect.left;
+						// On right side target is always right page's right border.
+						mAnimationTarget.set(mDragStartPos);
+						mAnimationTarget.x = mRenderer
+								.getPageRect(CurlRenderer.PAGE_RIGHT).right;
+						mAnimationTargetEvent = SET_CURL_TO_RIGHT;//向右卷轴
 					}
-					mAnimationTargetEvent = SET_CURL_TO_LEFT;
+				} else {
+					//原来的实现方案
+					// Given the explanation, here we decide whether to simulate
+					// drag to left or right end.
+					if ((mViewMode == SHOW_ONE_PAGE && mPointerPos.mPos.x > (rightRect.left + rightRect.right) / 2)
+							|| mViewMode == SHOW_TWO_PAGES
+							&& mPointerPos.mPos.x > rightRect.left) {
+						// On right side target is always right page's right border.
+						mAnimationTarget.set(mDragStartPos);
+						mAnimationTarget.x = mRenderer
+								.getPageRect(CurlRenderer.PAGE_RIGHT).right;
+						mAnimationTargetEvent = SET_CURL_TO_RIGHT;//向右卷轴
+						Log.d("CurlView", "onTouch: 1");
+					} else {
+						// On left side target depends on visible pages.
+						mAnimationTarget.set(mDragStartPos);
+						if (mCurlState == CURL_RIGHT || mViewMode == SHOW_TWO_PAGES) {
+							mAnimationTarget.x = leftRect.left;
+						} else {
+							mAnimationTarget.x = rightRect.left;
+						}
+						mAnimationTargetEvent = SET_CURL_TO_LEFT;//向左卷轴
+						Log.d("CurlView", "onTouch: 2");
+					}
 				}
+
 				mAnimate = true;
 				requestRender();
 			}
@@ -537,7 +567,7 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 			mRenderer.removeCurlMesh(mPageRight);
 			mRenderer.removeCurlMesh(mPageCurl);
 
-			// We are curling right page.
+			// We are curling right page. mPageRight和mPageCurl交换
 			CurlMesh curl = mPageRight;
 			mPageRight = mPageCurl;
 			mPageCurl = curl;
@@ -668,14 +698,18 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 			// Actual curl position calculation.
 			if (dist >= curlLen) {
 				double translate = (dist - curlLen) / 2;
-				if (mViewMode == SHOW_TWO_PAGES) {
-					mCurlPos.x -= mCurlDir.x * translate / dist;
-				} else {
-					float pageLeftX = mRenderer
-							.getPageRect(CurlRenderer.PAGE_RIGHT).left;
-					radius = Math.max(Math.min(mCurlPos.x - pageLeftX, radius),
-							0f);
-				}
+//				if (mViewMode == SHOW_TWO_PAGES) {
+//					//触摸点与卷轴同步
+//					mCurlPos.x -= mCurlDir.x * translate / dist;
+//				} else {
+//					//触摸点与卷轴不同步!!! 触摸到一定距离时 卷轴提前卷
+//					float pageLeftX = mRenderer
+//							.getPageRect(CurlRenderer.PAGE_RIGHT).left;
+//					radius = Math.max(Math.min(mCurlPos.x - pageLeftX, radius),
+//							0f);
+//				}
+				//使用卷轴同步方案
+				mCurlPos.x -= mCurlDir.x * translate / dist;
 				mCurlPos.y -= mCurlDir.y * translate / dist;
 			} else {
 				double angle = Math.PI * Math.sqrt(dist / curlLen);
