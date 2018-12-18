@@ -34,9 +34,10 @@ public class CurlView extends GLSurfaceView implements View.OnTouchListener,
 		CurlRenderer.Observer {
 
 	// Curl state. We are flipping none, left or right page.
-	private static final int CURL_LEFT = 1;
+	//滚动状态
+	private static final int CURL_LEFT = 1;//翻上一页
 	private static final int CURL_NONE = 0;
-	private static final int CURL_RIGHT = 2;
+	private static final int CURL_RIGHT = 2;//翻下一页
 
 	// Constants for mAnimationTargetEvent.
 	private static final int SET_CURL_TO_LEFT = 1;

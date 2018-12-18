@@ -105,14 +105,17 @@ public class CurlActivity extends Activity {
 						/ d.getIntrinsicHeight();
 			}
 
+			//让其居中显示
 			r.left += ((r.width() - imageWidth) / 2) - border;
 			r.right = r.left + imageWidth + border + border;
 			r.top += ((r.height() - imageHeight) / 2) - border;
 			r.bottom = r.top + imageHeight + border + border;
 
+			//边框颜色
 			Paint p = new Paint();
 			p.setColor(0xFFC0C0C0);
 			c.drawRect(r, p);
+			//加边框
 			r.left += border;
 			r.right -= border;
 			r.top += border;
@@ -187,12 +190,14 @@ public class CurlActivity extends Activity {
 	private class SizeChangedObserver implements CurlView.SizeChangedObserver {
 		@Override
 		public void onSizeChanged(int w, int h) {
+			//判断CurView的宽高
+			//如果w>h显示双页面,否则显示单页面
 			if (w > h) {
 				mCurlView.setViewMode(CurlView.SHOW_TWO_PAGES);
-				mCurlView.setMargins(.1f, .05f, .1f, .05f);
+//				mCurlView.setMargins(.1f, .05f, .1f, .05f);
 			} else {
 				mCurlView.setViewMode(CurlView.SHOW_ONE_PAGE);
-				mCurlView.setMargins(.1f, .1f, .1f, .1f);
+//				mCurlView.setMargins(.1f, .1f, .1f, .1f);
 			}
 		}
 	}
